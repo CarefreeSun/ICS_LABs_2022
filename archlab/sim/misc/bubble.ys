@@ -1,0 +1,63 @@
+# 姓名：孙少凡
+# ID：2100013085@stu.pku.edu.cn
+	.pos 0
+	irmovq stack, %rsp
+	call main
+	halt
+
+# Array of 6 elements
+.align 8
+array:
+	.quad 0xbca
+	.quad 0xcba
+	.quad 0xacb
+	.quad 0xcab
+	.quad 0xabc
+	.quad 0xbac
+
+main:
+	irmovq array,%rdi		
+	irmovq $6,%rsi
+	call bubble_sort
+	ret
+
+# void bubble_sort(long *data, long count)
+# data in %rdi, count in %rsi
+bubble_sort:
+	irmovq $1,%r8			# constant 1
+	irmovq $8,%r9			# constant 8
+	rrmovq %rdi,%r10		# last = data
+	rrmovq %rsi,%r11	
+loop1:					# let last = data + count - 1
+	subq %r8,%r11			# count - 1 and set CC
+	je	loop2			# 0, last = data + count - 1
+	addq %r9,%r10			# last++
+	jmp	loop1
+loop2:
+	subq %rdi,%r10			# test (last - data)
+	je	exdone			# last == data
+	addq %rdi,%r10
+	rrmovq %rdi,%r11		# i = data
+loop3:
+	subq %r10,%r11			# test (i - last)
+	je	indone			# i == last
+	addq %r10,%r11
+	mrmovq (%r11),%r12		# *i
+	mrmovq 8(%r11),%r13		# t = *(i + 1)
+	subq %r12,%r13			# test (*(i+1) - *i)
+	jge	false			# *(i+1) >= *i
+	addq %r12,%r13
+	rmmovq %r12,8(%r11)		# *(i+1) = *i
+	rmmovq %r13,(%r11)		# *i = t
+false:
+	addq %r9,%r11			# i++
+	jmp	loop3
+indone:
+	subq %r9,%r10			# last--
+	jmp	loop2
+exdone:
+	ret
+
+# Stack here
+	.pos 0x200
+stack:
